@@ -19,6 +19,42 @@ func next() int {
 type node struct {
 	item int
 	prev *node
+	rank int
+}
+
+func (n *node) root() *node {
+	var parent *node
+	for parent = n; parent.prev != nil; parent = parent.prev {
+		continue
+	}
+	return parent
+}
+
+func issame(nodeX, nodeY *node) bool {
+	return nodeX.root() == nodeY.root()
+
+}
+
+func merge(nodeX, nodeY *node) {
+	parentX := nodeX.root()
+	parentY := nodeY.root()
+
+	if nodeX.rank < nodeY.rank {
+		nodeX, nodeY = nodeY, nodeX
+	}
+
+	if nodeX.rank == nodeY.rank {
+		nodeX.rank += 1
+	}
+
+	if parentX.prev != nil || parentY.prev != nil {
+		panic(fmt.Sprintf("%v, %v", parentX, parentY))
+	}
+	if parentX.item != parentY.item {
+		parentX.prev = parentY
+
+	}
+
 }
 
 func main() {
@@ -28,36 +64,16 @@ func main() {
 
 	groups := make([]*node, n)
 	for i := 0; i < n; i++ {
-		groups[i] = &node{item: i, prev: nil}
+		groups[i] = &node{item: i, prev: nil, rank: 0}
 	}
 
 	for i := 0; i < q; i++ {
 		com, x, y := next(), next(), next()
 		if com == 0 {
-			var parentX, parentY *node
-			for parentX = groups[x]; parentX.prev != nil; parentX = parentX.prev {
-				continue
-			}
-			for parentY = groups[y]; parentY.prev != nil; parentY = parentY.prev {
-				continue
-			}
-			if parentX.prev != nil || parentY.prev != nil {
-				panic(fmt.Sprintf("%v, %v", parentX, parentY))
-			}
-			if parentX.item != parentY.item {
-				parentX.prev = parentY
-
-			}
+			merge(groups[x], groups[y])
 
 		} else {
-			var parentX, parentY *node
-			for parentX = groups[x]; parentX.prev != nil; parentX = parentX.prev {
-				continue
-			}
-			for parentY = groups[y]; parentY.prev != nil; parentY = parentY.prev {
-				continue
-			}
-			if parentX.item == parentY.item {
+			if issame(groups[x], groups[y]) {
 				fmt.Println("1")
 			} else {
 				fmt.Println("0")
