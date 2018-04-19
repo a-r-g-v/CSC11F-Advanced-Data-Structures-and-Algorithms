@@ -27,6 +27,9 @@ func (n *node) root() *node {
 	for parent = n; parent.prev != nil; parent = parent.prev {
 		continue
 	}
+	if parent != n {
+		n.prev = parent
+	}
 	return parent
 }
 
@@ -38,6 +41,9 @@ func issame(nodeX, nodeY *node) bool {
 func merge(nodeX, nodeY *node) {
 	parentX := nodeX.root()
 	parentY := nodeY.root()
+	if parentX.item == parentY.item {
+		return
+	}
 
 	if nodeX.rank < nodeY.rank {
 		nodeX, nodeY = nodeY, nodeX
@@ -50,10 +56,8 @@ func merge(nodeX, nodeY *node) {
 	if parentX.prev != nil || parentY.prev != nil {
 		panic(fmt.Sprintf("%v, %v", parentX, parentY))
 	}
-	if parentX.item != parentY.item {
-		parentX.prev = parentY
 
-	}
+	parentY.prev = parentX
 
 }
 
