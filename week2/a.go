@@ -39,9 +39,9 @@ func issame(nodeX, nodeY *node) bool {
 }
 
 func merge(nodeX, nodeY *node) {
-	parentX := nodeX.root()
-	parentY := nodeY.root()
-	if parentX.item == parentY.item {
+	nodeX = nodeX.root()
+	nodeY = nodeY.root()
+	if nodeX.item == nodeY.item {
 		return
 	}
 
@@ -53,11 +53,11 @@ func merge(nodeX, nodeY *node) {
 		nodeX.rank += 1
 	}
 
-	if parentX.prev != nil || parentY.prev != nil {
-		panic(fmt.Sprintf("%v, %v", parentX, parentY))
+	if nodeX.prev != nil || nodeY.prev != nil {
+		panic(fmt.Sprintf("%v, %v", nodeX, nodeY))
 	}
 
-	parentY.prev = parentX
+	nodeY.prev = nodeX
 
 }
 
