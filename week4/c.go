@@ -84,45 +84,62 @@ func pp(s [16]byte) {
 
 }
 
-type item struct {
-	d *[16]byte
-	c int
-}
+func dls(limit int, now int, state [16]byte, parents [][16]byte) bool {
 
-var queue = []item{}
-var closed = map[[16]byte]bool{}
+	for _, s := range parents {
+		if s == state {
+			return false
+		}
 
-func bfs(cost int) int {
-	for {
-		top := queue[0]
-		queue = queue[1:]
+	}
 
-		if *top.d == goal {
-			return top.c
-		}
-		closed[*top.d] = true
+	if now == limit+1 {
+		return false
 
-		ok, ur := up(*top.d)
-		ok2, _ := closed[ur]
-		if ok && !ok2 {
-			queue = append(queue, item{&ur, top.c + 1})
-		}
-		ok, dr := down(*top.d)
-		ok2, _ = closed[dr]
-		if ok && !ok2 {
-			queue = append(queue, item{&dr, top.c + 1})
-		}
-		ok, lr := left(*top.d)
-		ok2, _ = closed[lr]
-		if ok && !ok2 {
-			queue = append(queue, item{&lr, top.c + 1})
-		}
-		ok, rr := right(*top.d)
-		ok2, _ = closed[rr]
-		if ok && !ok2 {
-			queue = append(queue, item{&rr, top.c + 1})
+	}
+
+	if state == goal {
+		return true
+	}
+
+	parents = append(parents, state)
+
+	ok, ur := up(state)
+	if ok {
+		var p [][16]byte
+		copy(p, parents)
+		if dls(limit, now+1, ur, p) {
+			return true
+
 		}
 	}
+	ok, dr := down(state)
+	if ok {
+		var p [][16]byte
+		copy(p, parents)
+		if dls(limit, now+1, dr, p) {
+			return true
+
+		}
+	}
+	ok, lr := left(state)
+	if ok {
+		var p [][16]byte
+		copy(p, parents)
+		if dls(limit, now+1, lr, p) {
+			return true
+		}
+	}
+	ok, rr := right(state)
+	if ok {
+		var p [][16]byte
+		copy(p, parents)
+		if dls(limit, now+1, rr, p) {
+			return true
+		}
+	}
+
+	return false
 
 }
 
@@ -132,7 +149,10 @@ func main() {
 	for i := 0; i < 16; i++ {
 		state[i] = byte(next())
 	}
-	queue = append(queue, item{&state, 0})
-	cost := bfs(0)
-	fmt.Println(cost)
+	for i := 0; i < 45; i++ {
+		if dls(i, 0, state, [][16]byte{}) {
+			fmt.Println(i)
+			return
+		}
+	}
 }
