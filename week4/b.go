@@ -9,16 +9,16 @@ import (
 
 var sc = bufio.NewScanner(os.Stdin)
 
-func search(in [9]int) int {
+func search(in [9]byte) int {
 	for i := 0; i < 9; i++ {
-		if in[i] == 0 {
+		if in[i] == byte(0) {
 			return i
 		}
 	}
 	panic("not found 0")
 }
 
-func up(in [9]int) (bool, [9]int) {
+func up(in [9]byte) (bool, [9]byte) {
 	pos := search(in)
 	if pos > 2 {
 		in[pos], in[pos-3] = in[pos-3], in[pos]
@@ -30,7 +30,7 @@ func up(in [9]int) (bool, [9]int) {
 
 }
 
-func down(in [9]int) (bool, [9]int) {
+func down(in [9]byte) (bool, [9]byte) {
 	pos := search(in)
 	if pos < 6 {
 		in[pos], in[pos+3] = in[pos+3], in[pos]
@@ -42,7 +42,7 @@ func down(in [9]int) (bool, [9]int) {
 
 }
 
-func left(in [9]int) (bool, [9]int) {
+func left(in [9]byte) (bool, [9]byte) {
 	pos := search(in)
 	// mod(pos, 3) == 0
 	if pos != 0 && pos != 3 && pos != 6 {
@@ -53,7 +53,7 @@ func left(in [9]int) (bool, [9]int) {
 	return true, in
 
 }
-func right(in [9]int) (bool, [9]int) {
+func right(in [9]byte) (bool, [9]byte) {
 	pos := search(in)
 	// mod(pos, 3) == 2
 	if pos != 2 && pos != 5 && pos != 8 {
@@ -73,9 +73,9 @@ func next() int {
 
 }
 
-var goal = [9]int{1, 2, 3, 4, 5, 6, 7, 8, 0}
+var goal = [9]byte{1, 2, 3, 4, 5, 6, 7, 8, 0}
 
-func pp(s [9]int) {
+func pp(s [9]byte) {
 
 	for i := 0; i < 3; i++ {
 		fmt.Printf("%d %d %d\n", s[0+3*i], s[1+3*i], s[2+3*i])
@@ -85,11 +85,12 @@ func pp(s [9]int) {
 }
 
 type item struct {
-	d [9]int
+	d *[9]byte
 	c int
 }
 
 var queue = []item{}
+var closed = map[[9]byte]bool{}
 
 func bfs(cost int) int {
 	for {
@@ -97,26 +98,30 @@ func bfs(cost int) int {
 		top := queue[0]
 		queue = queue[1:]
 
-		if top.d == goal {
+		if *top.d == goal {
 			return top.c
+		}
+		closed[*top.d] = true
 
+		ok, ur := up(*top.d)
+		ok2, _ := closed[ur]
+		if ok && !ok2 {
+			queue = append(queue, item{&ur, top.c + 1})
 		}
-
-		ok, ur := up(top.d)
-		if ok {
-			queue = append(queue, item{ur, top.c + 1})
+		ok, dr := down(*top.d)
+		ok2, _ = closed[ur]
+		if ok && !ok2 {
+			queue = append(queue, item{&dr, top.c + 1})
 		}
-		ok, dr := down(top.d)
-		if ok {
-			queue = append(queue, item{dr, top.c + 1})
+		ok, lr := left(*top.d)
+		ok2, _ = closed[ur]
+		if ok && !ok2 {
+			queue = append(queue, item{&lr, top.c + 1})
 		}
-		ok, lr := left(top.d)
-		if ok {
-			queue = append(queue, item{lr, top.c + 1})
-		}
-		ok, rr := right(top.d)
-		if ok {
-			queue = append(queue, item{rr, top.c + 1})
+		ok, rr := right(*top.d)
+		ok2, _ = closed[ur]
+		if ok && !ok2 {
+			queue = append(queue, item{&rr, top.c + 1})
 		}
 	}
 
@@ -124,11 +129,11 @@ func bfs(cost int) int {
 
 func main() {
 	sc.Split(bufio.ScanWords)
-	var state [9]int
+	var state [9]byte
 	for i := 0; i < 9; i++ {
-		state[i] = next()
+		state[i] = byte(next())
 	}
-	queue = append(queue, item{state, 0})
+	queue = append(queue, item{&state, 0})
 	cost := bfs(0)
 	fmt.Println(cost)
 }
