@@ -3,11 +3,41 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
 
 var sc = bufio.NewScanner(os.Stdin)
+var intmax = 2147483647
+
+func correct(i int) (x, y int) {
+	if i == 0 {
+		return 3, 3
+	}
+
+	return (i - 1) / 4, int(math.Mod(float64(i-1), 4))
+
+}
+
+func manhattan(in [16]byte) (sum int) {
+
+	for i := 0; i < 16; i++ {
+		var nx, ny int
+		if i == 15 {
+			nx, ny = 3, 3
+		} else {
+			nx, ny = (i)/4, int(math.Mod(float64(i), 4))
+		}
+
+		cx, cy := correct(int(in[i]))
+		r := int(math.Abs(float64(nx-cx))) + int(math.Abs(float64(ny-cy)))
+		//fmt.Printf("%d: (%d, %d), (%d, %d) = %d \n", in[i], nx, ny, cx, cy, r)
+		sum += r
+	}
+
+	return
+}
 
 func search(in [16]byte) int {
 	for i := 0; i < 16; i++ {
@@ -84,62 +114,68 @@ func pp(s [16]byte) {
 
 }
 
-func dls(limit int, now int, state [16]byte, parents [][16]byte) bool {
-
-	for _, s := range parents {
-		if s == state {
-			return false
+func ulen(l [][16]byte) int {
+	c := 0
+	e := map[[16]byte]bool{}
+	for i := 0; i < len(l); i++ {
+		if !e[l[i]] {
+			e[l[i]] = true
+			c++
 		}
-
 	}
+	return c
+}
 
-	if now == limit+1 {
-		return false
-
-	}
+func dls(limit int, now int, state [16]byte, parents [][16]byte) (bool, int) {
 
 	if state == goal {
-		return true
+		return true, ulen(parents)
+	}
+
+	if manhattan(state)+now > limit {
+		return false, 0
 	}
 
 	parents = append(parents, state)
 
 	ok, ur := up(state)
-	if ok {
-		var p [][16]byte
+	if ok && !(len(parents) >= 1 && parents[len(parents)-1] == ur) {
+		p := make([][16]byte, len(parents))
 		copy(p, parents)
-		if dls(limit, now+1, ur, p) {
-			return true
-
+		ok, ans := dls(limit, now+1, ur, p)
+		if ok {
+			return true, ans
 		}
 	}
 	ok, dr := down(state)
-	if ok {
-		var p [][16]byte
+	if ok && !(len(parents) >= 1 && parents[len(parents)-1] == dr) {
+		p := make([][16]byte, len(parents))
 		copy(p, parents)
-		if dls(limit, now+1, dr, p) {
-			return true
-
+		ok, ans := dls(limit, now+1, dr, p)
+		if ok {
+			return true, ans
 		}
 	}
 	ok, lr := left(state)
-	if ok {
-		var p [][16]byte
+	if ok && !(len(parents) >= 1 && parents[len(parents)-1] == lr) {
+		p := make([][16]byte, len(parents))
 		copy(p, parents)
-		if dls(limit, now+1, lr, p) {
-			return true
+		ok, ans := dls(limit, now+1, lr, p)
+		if ok {
+			return true, ans
 		}
 	}
 	ok, rr := right(state)
-	if ok {
-		var p [][16]byte
+	if ok && !(len(parents) >= 1 && parents[len(parents)-1] == rr) {
+		p := make([][16]byte, len(parents))
 		copy(p, parents)
-		if dls(limit, now+1, rr, p) {
-			return true
+		ok, ans := dls(limit, now+1, rr, p)
+		if ok {
+			return true, ans
 		}
 	}
 
-	return false
+	return false, 0
 
 }
 
@@ -149,10 +185,14 @@ func main() {
 	for i := 0; i < 16; i++ {
 		state[i] = byte(next())
 	}
-	for i := 0; i < 45; i++ {
-		if dls(i, 0, state, [][16]byte{}) {
-			fmt.Println(i)
+
+	for bound := manhattan(state); bound < 45; bound++ {
+		found, cost := dls(bound, 0, state, [][16]byte{})
+		if found {
+			fmt.Println(cost)
 			return
 		}
 	}
+
+	panic("error")
 }
