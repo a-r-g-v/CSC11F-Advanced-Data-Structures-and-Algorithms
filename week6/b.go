@@ -133,16 +133,33 @@ func main() {
 	N, L := next(), next()
 
 	items := make([]int, N)
+	memo := make(map[int]int, N)
+
 	for i := 0; i < N; i++ {
 		items[i] = next()
 	}
 
 	for j := 0; j < L-1; j++ {
 		head = insert(head, items[j], rand.Int())
+		memo[items[j]] += 1
 	}
+
 	for i := L - 1; i < N; i++ {
-		insert(head, items[i], rand.Int())
-		fmt.Printf("%d ", getMin(head))
-		erase(head, items[i-L+1])
+		head = insert(head, items[i], rand.Int())
+		memo[items[i]] += 1
+		if i == N-1 {
+			fmt.Printf("%d\n", getMin(head))
+		} else {
+			fmt.Printf("%d ", getMin(head))
+
+		}
+
+		r, ok := memo[items[i-L+1]]
+		if ok {
+			if r <= 1 {
+				head = erase(head, items[i-L+1])
+			}
+			memo[items[i-L+1]] -= 1
+		}
 	}
 }
