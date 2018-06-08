@@ -140,9 +140,8 @@ func main() {
 	for j := 0; j < L-1; j++ {
 		head = insert(head, items[j], rand.Int())
 	}
-	for i := 0; i < (N - L + 1); i++ {
-		insert(head, items[L+i-1], rand.Int())
-		fmt.Printf(" %d", getMin(head))
-		erase(head, items[L+i-(L-1)])
+	for i := L - 1; i < N; i++ {
+		insert(head, items[i], rand.Int())
+		erase(head, items[i-L+1])
 	}
 }
