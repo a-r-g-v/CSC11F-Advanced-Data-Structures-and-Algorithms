@@ -12,6 +12,10 @@ var MIN int = 0
 
 var sc = bufio.NewScanner(os.Stdin)
 
+var writer *bufio.Writer = bufio.NewWriter(os.Stdout)
+
+func printf(f string, a ...interface{}) { fmt.Fprintf(writer, f, a...) }
+
 type Node struct {
 	key, pri    int
 	left, rigth *Node
@@ -126,6 +130,8 @@ func getMin(t *Node) int {
 }
 
 func main() {
+	defer writer.Flush()
+
 	sc.Split(bufio.ScanWords)
 
 	var head *Node
@@ -148,9 +154,9 @@ func main() {
 		head = insert(head, items[i], rand.Int())
 		memo[items[i]] += 1
 		if i == N-1 {
-			fmt.Printf("%d\n", getMin(head))
+			printf("%d\n", getMin(head))
 		} else {
-			fmt.Printf("%d ", getMin(head))
+			printf("%d ", getMin(head))
 
 		}
 
